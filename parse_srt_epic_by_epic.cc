@@ -1,7 +1,7 @@
 /**
  * @file: parse_srt_epic_by_epic.cc
  * @author: Colin Russell
- * @date: 7/24/2020
+ * @date: 7/26/2020
  * @brief: This program parses longitude, latitude, and altitude data from the SRT File of a 
  *         DJI drone. This program assumes that altitude is atleast 100 and less than 1000.
  *         Only one entry of telemetry will be accepted each second, which is epic by epic.
@@ -26,7 +26,7 @@ struct Telemetry{
         string timecode; /// Starting duration for each frame for corresponding video
 };
 
-void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &inputFileStream);
+void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream);
 /**
  *  Function:   fillVectorFromFile
  *              Fills the data vector with the date/time, latitude, longitude, and altitude at each given index
@@ -36,14 +36,14 @@ void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &input
  *  @param inputFileStream - input file
  */
 
-void fillVectorwithOneSecondDurationCounter(size_t sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
+void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
 
 int main(){
     cout << setprecision(6) << fixed;
-    string inputFileName = "DJI_0071.SRT";
-    ///cout << "Enter name of input file: ";
-    ///cin >> inputFileName;
-    string outputFileName = "output.csv"; ///"CSV File for " + inputFileName + ".csv";
+    string inputFileName;
+    cout << "Enter name of input file: ";
+    cin >> inputFileName;
+    string outputFileName = "CSV File for " + inputFileName + "Epic-by-Epic.csv";
     vector<Telemetry> droneData;
     vector<Telemetry> droneDataPerSecond;
     ifstream inputFileStream;
@@ -58,17 +58,17 @@ int main(){
         cout << "Error opening output file." << endl;
         exit(0);
     }
-    size_t count = 0;
+    int count = 0;
     fillVectorFromFile(droneData, count, inputFileStream);
     int oneSecondIndex = 0;
     fillVectorwithOneSecondDurationCounter(count, oneSecondIndex, droneDataPerSecond, droneData);  /// count is the amount of index values / total frames from the original SRT File
     /// One second index will be used in the same way count was used for indexing the primary vector, droneData, which will be called sourceData in the  fillVectorwithOneSecondDurationCounter function
-    outputFileStream << "Time, Second, Latitude, Longitude, Altitude" << endl;
+    outputFileStream << "Time, Latitude, Longitude, Altitude" << endl;
     outputFileStream << setprecision(6) << fixed;
     
     /// The for loop below fills the output CSV file.
    for (int i = 0; i < oneSecondIndex; ++i){
-        outputFileStream << droneDataPerSecond.at(i).time << ", " << droneDataPerSecond.at(i).second << ", "
+        outputFileStream << droneDataPerSecond.at(i).time << ", "
         << droneDataPerSecond.at(i).latitude << ", " << droneDataPerSecond.at(i).longitude << ", " << droneDataPerSecond.at(i).altitude << endl;
     }
     cout << "The output file compiled successfully." << endl;
@@ -77,7 +77,7 @@ int main(){
     return 0;
 }
 
-void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &inputFileStream){
+void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream){
     string temp;
     string tcode;
     string month, day, year, timeWithHourMinuteSecond, fractionOfSecondString, dateModified, timeModified; /// The format in which the date and time are presented is modified
@@ -116,11 +116,12 @@ void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &input
     }
 }
 
-void fillVectorwithOneSecondDurationCounter(size_t sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
+void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
     Telemetry entry;
     for (int i = 0; i < sourceCount; ++i){
         int indexPlus1 = i + 1;
-        if ((sourceData.at(i).second < sourceData.at(indexPlus1).second) || sourceData.at(i).second == 59){
+        int indexMinus1 = i - 1;
+        if ((sourceData.at(i).second < sourceData.at(indexPlus1).second) || ((sourceData.at(i).second == 59) && (sourceData.at(indexMinus1).second == 58))){
             data.push_back(entry);
             data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
             data.at(oneSecondIndex).date = sourceData.at(i).date;
@@ -132,5 +133,4 @@ void fillVectorwithOneSecondDurationCounter(size_t sourceCount, int &oneSecondIn
             oneSecondIndex++;
         }
     }
-
 }
