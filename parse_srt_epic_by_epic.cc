@@ -43,7 +43,7 @@ int main(){
     string inputFileName;
     cout << "Enter name of input file: ";
     cin >> inputFileName;
-    string outputFileName = "CSV File for " + inputFileName + "Epic-by-Epic.csv";
+    string outputFileName = "CSV File for " + inputFileName + " Epic-by-Epic.csv";
     vector<Telemetry> droneData;
     vector<Telemetry> droneDataPerSecond;
     ifstream inputFileStream;
