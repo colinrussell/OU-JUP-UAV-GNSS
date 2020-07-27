@@ -1,10 +1,10 @@
 /**
- * @file: parse_srt.cc
+ * @file: parse_srt_epic_by_epic.cc
  * @author: Colin Russell
  * @date: 7/24/2020
- * @brief: This program parses longitude, latitude, and altitude data from the SRT File of the 
- *         DJI Mavic Pro 2 Drone. This program assumes that altitude is atleast 100 and less than 1000.
- *         Only one entry of telemetry will be accepted each second. 
+ * @brief: This program parses longitude, latitude, and altitude data from the SRT File of a 
+ *         DJI drone. This program assumes that altitude is atleast 100 and less than 1000.
+ *         Only one entry of telemetry will be accepted each second, which is epic by epic.
  */
 
 #include <iostream>
@@ -118,21 +118,9 @@ void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &input
 
 void fillVectorwithOneSecondDurationCounter(size_t sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
     Telemetry entry;
-    /*data.push_back(entry);
-    data.at(0).altitude = sourceData.at(0).altitude;
-    data.at(0).date = sourceData.at(0).date;
-    data.at(0).latitude = sourceData.at(0).latitude;
-    data.at(0).longitude = sourceData.at(0).longitude;
-    data.at(0).second = sourceData.at(0).second;
-    data.at(0).time = sourceData.at(0).time;
-    data.at(0).timecode = sourceData.at(0).timecode;
-    oneSecondIndex++;*/
-    ofstream outputFileTest;
-    outputFileTest.open("outputtest.txt");
     for (int i = 0; i < sourceCount; ++i){
         int indexPlus1 = i + 1;
-        outputFileTest << "Second is: " << sourceData[i].second << endl;
-        if (sourceData.at(i).second < sourceData.at(indexPlus1).second){
+        if ((sourceData.at(i).second < sourceData.at(indexPlus1).second) || sourceData.at(i).second == 59){
             data.push_back(entry);
             data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
             data.at(oneSecondIndex).date = sourceData.at(i).date;
