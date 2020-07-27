@@ -1,7 +1,7 @@
 /**
  * @file: parse_srt.cc
  * @author: Colin Russell
- * @date: 7/24/2020
+ * @date: 7/26/2020
  * @brief: This program parses longitude, latitude, and altitude data from the SRT File of the 
  *         DJI Mavic Pro 2 Drone. This program assumes that altitude is atleast 100 and less than 1000. 
  */
@@ -24,7 +24,7 @@ struct Telemetry{
         string timecode; /// Starting duration for each frame for corresponding video
 };
 
-void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &inputFileStream);
+void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream);
 /**
  *  Function:   fillVectorFromFile
  *              Fills the data vector with the date/time, latitude, longitude, and altitude at each given index
@@ -53,7 +53,7 @@ int main(){
         cout << "Error opening output file." << endl;
         exit(0);
     }
-    size_t count = 0;
+    int count = 0;
     fillVectorFromFile(droneData, count, inputFileStream);
     outputFileStream << "TimeCode, Frame, Date, Time, Latitude, Longitude, Altitude" << endl;
     outputFileStream << setprecision(6) << fixed;
@@ -66,10 +66,11 @@ int main(){
     cout << "The output file compiled successfully." << endl;
     inputFileStream.close();
     outputFileStream.close();
+    cout << droneData.size() << endl;
     return 0;
 }
 
-void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &inputFileStream){
+void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream){
     string temp;
     string tcode;
     string month, day, year, timeWithHourMinuteSecond, fractionOfSecondString, dateModified, timeModified; /// The format in which the date and time are presented is modified
@@ -84,7 +85,6 @@ void fillVectorFromFile (vector<Telemetry> &data, size_t &count, ifstream &input
             data.at(count).timecode = tcode;
         }
         if (temp.length() == 27){           /// gets the date and time
-            data.push_back(entry);
             year = temp.substr(0,4);
             month = temp.substr(5, 2);
             day = temp.substr(8, 2);
