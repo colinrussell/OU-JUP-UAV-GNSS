@@ -66,7 +66,6 @@ int main(){
     cout << "The output file compiled successfully." << endl;
     inputFileStream.close();
     outputFileStream.close();
-    cout << droneData.size() << endl;
     return 0;
 }
 
