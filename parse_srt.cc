@@ -57,7 +57,6 @@ int main(){
     fillVectorFromFile(droneData, count, inputFileStream);
     outputFileStream << "TimeCode, Frame, Date, Time, Latitude, Longitude, Altitude" << endl;
     outputFileStream << setprecision(6) << fixed;
-    
     /// The for loop below fills the output CSV file.
     for (int i = 0; i < count; ++i){
         outputFileStream << droneData.at(i).timecode << ", " << i + 1 << ", " << droneData.at(i).date << ", " << droneData.at(i).time << ", "
@@ -94,8 +93,7 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
             dateModified = month + "/" + day + "/" + year;
             data.at(count).date = dateModified;
             data.at(count).time = timeModified;
-        }
-        if (temp.length() == 186){          /// gets lat, long, and alt
+            getline(inputFileStream, temp);
             latitudeString = temp.substr(119, 9);
             data.at(count).latitude = stod(latitudeString);
             longitudeString = temp.substr(144, 10);
