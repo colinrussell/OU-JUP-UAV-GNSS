@@ -1,7 +1,7 @@
 /**
  * @file: parse_srt_epic_by_epic.cc
  * @author: Colin Russell
- * @date: 7/26/2020
+ * @date: 7/31/2020
  * @brief: This program parses longitude, latitude, and altitude data from the SRT File of a 
  *         DJI drone. This program assumes that altitude is atleast 100 and less than 1000.
  *         Only one entry of telemetry will be accepted each second, which is epic by epic.
@@ -43,7 +43,7 @@ int main(){
     string inputFileName;
     cout << "Enter name of input file: ";
     cin >> inputFileName;
-    string outputFileName = "CSV File for " + inputFileName + " Epic-by-Epic.csv";
+    string outputFileName = inputFileName + " Epic-by-Epic.csv";
     vector<Telemetry> droneData;
     vector<Telemetry> droneDataPerSecond;
     ifstream inputFileStream;
@@ -67,7 +67,7 @@ int main(){
     outputFileStream << setprecision(6) << fixed;
     
     /// The for loop below fills the output CSV file.
-   for (int i = 0; i < oneSecondIndex; ++i){
+    for (int i = 0; i < oneSecondIndex; ++i){
         outputFileStream << droneDataPerSecond.at(i).time << ", "
         << droneDataPerSecond.at(i).latitude << ", " << droneDataPerSecond.at(i).longitude << ", " << droneDataPerSecond.at(i).altitude << endl;
     }
@@ -103,8 +103,7 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
             dateModified = month + "/" + day + "/" + year;
             data.at(count).date = dateModified;
             data.at(count).time = timeModified;
-        }
-        if (temp.length() == 186){          /// gets lat, long, and alt
+            getline(inputFileStream, temp);
             latitudeString = temp.substr(119, 9);
             data.at(count).latitude = stod(latitudeString);
             longitudeString = temp.substr(144, 10);
@@ -118,10 +117,20 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
 
 void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
     Telemetry entry;
-    for (int i = 0; i < sourceCount; ++i){
-        int indexPlus1 = i + 1;
+    for (int i = 1; i < sourceCount; ++i){
         int indexMinus1 = i - 1;
-        if ((sourceData.at(i).second < sourceData.at(indexPlus1).second) || ((sourceData.at(i).second == 59) && (sourceData.at(indexMinus1).second == 58))){
+        if((sourceData.at(i).second == 0) && ((sourceData.at(indexMinus1).second == 59) || i == 1)){
+            data.push_back(entry);
+            data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
+            data.at(oneSecondIndex).date = sourceData.at(i).date;
+            data.at(oneSecondIndex).latitude = sourceData.at(i).latitude;
+            data.at(oneSecondIndex).longitude = sourceData.at(i).longitude;
+            data.at(oneSecondIndex).second = sourceData.at(i).second;
+            data.at(oneSecondIndex).time = sourceData.at(i).time;
+            data.at(oneSecondIndex).timecode = sourceData.at(i).timecode;
+            oneSecondIndex++;
+        }
+        if ((sourceData.at(i).second > sourceData.at(indexMinus1).second) || ((sourceData.at(i).second == 59) && (sourceData.at(indexMinus1).second == 58))){
             data.push_back(entry);
             data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
             data.at(oneSecondIndex).date = sourceData.at(i).date;
