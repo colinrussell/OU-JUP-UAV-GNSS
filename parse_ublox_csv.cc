@@ -36,7 +36,7 @@ int main(){
     string inputFileName = "Ublox GPS PVT Data.csv";
     //cout << "Enter the name of input file: ";
     //cin >> inputFileName;
-    string outputFileName = "KML File for " + inputFileName;
+    string outputFileName = "KML File for " + inputFileName + ".kml";
     vector <Telemetry> ubloxData;
     ifstream inputFileStream;
     inputFileStream.open(inputFileName);
@@ -94,7 +94,7 @@ void loadVector(vector<Telemetry> &data, ifstream &inputFileStream){
         }
         dataSize++;
     }
-    for (int i = 0; i <= data.size(); ++i){ /// Creates when and coord entries for use with the KML File
+    for (int i = 0; i < data.size(); ++i){ /// Creates when and coord entries for use with the KML File
         data.at(i).dateYMD = data.at(i).date.substr(6, 4) + "-" + data.at(i).date.substr(0, 2) + "-" + data.at(i).date.substr(3, 2);
         data.at(i).when = "<when>" + data.at(i).dateYMD + "T" + data.at(i).time + "Z</when>";
         data.at(i).coord = "<gx:coord>" + to_string(data.at(i).longitude) + " " + to_string(data.at(i).latitude) + " " + to_string(data.at(i).altitude) + "</gx:coord>";
@@ -102,5 +102,8 @@ void loadVector(vector<Telemetry> &data, ifstream &inputFileStream){
 }
 
 void fillKMLFile(vector<Telemetry> &data, ofstream &outs){
-
+    outs << "<?xml version=" << '"' << "1.0" << '"' << " encoding=" << '"' << "UTF-8" << '"' << "?>" << endl
+         << "<kml xmlns= http:/" << "/www.opengis.net/kml/2.2" << '"' << " xmlns:gx=" << '"' << "http:/" << "/www.google.com/kml/ext/2.2" << '"' << endl
+         << "<Document>" << endl
+         << "<name>Ublox Data KML</name>" << endl;
 }
