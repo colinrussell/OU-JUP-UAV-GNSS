@@ -14,8 +14,7 @@
 #include <string>
 using namespace std;
 
-struct Telemetry
-{
+struct Telemetry{
     int index;
     string time;
     string date;
@@ -104,6 +103,13 @@ void loadVector(vector<Telemetry> &data, ifstream &inputFileStream){
 void fillKMLFile(vector<Telemetry> &data, ofstream &outs){
     outs << "<?xml version=" << '"' << "1.0" << '"' << " encoding=" << '"' << "UTF-8" << '"' << "?>" << endl
          << "<kml xmlns= http:/" << "/www.opengis.net/kml/2.2" << '"' << " xmlns:gx=" << '"' << "http:/" << "/www.google.com/kml/ext/2.2" << '"' << endl
-         << "<Document>" << endl
-         << "<name>Ublox Data KML</name>" << endl;
+         << "    <Document>" << endl
+         << "       <name>Ublox Data KML</name>" << endl
+         << "    <LookAt>" << endl << "        <gx:TimeSpan>" << endl << "            <begin>" << data.at(0).dateYMD + "T" + data.at(0).time + "Z" << "</begin>" << endl
+         << "            <end>" << data.at(data.size()-1).dateYMD + "T" + data.at(data.size()-1).time + "Z" << "</end>" << endl << "    </gx:TimeSpan>" << endl
+         << "            <longitude>" << data.at(0).longitude << "</longitude>" << endl
+         << "            <latitude>" << data.at(0).latitude << "</latitude>" << endl
+         << "            <range>" << 2000 /****Replace this number */<< "</range>" << endl
+         << "    </LookAt>" << endl;
+        /// Information above includes the beginning of the XML KML file, the document infomation, and the LookAt Information
 }
