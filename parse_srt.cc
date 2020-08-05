@@ -1,5 +1,5 @@
 /**
- * @file: parse_srt_epic_by_epic.cc
+ * @file: parse_srt.cc
  * @author: Colin Russell
  * @date: 08/04/2020
  * @brief: This program parses longitude, latitude, and altitude data from the SRT File of a 
@@ -38,8 +38,34 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
  */
 
 void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
-void fillOutputFile(int oneSecondIndex, vector<Telemetry> &droneData, string outsFileName);
-void fillOutputEpicByEpicFile(int count, vector<Telemetry> &droneDataPerSecond, string outsFileName);
+/**
+ *  Function:   fillVectorwithOneSecondDurationCounter
+ *              Fills the data vector with the date/time, latitude, longitude, and altitude for each second
+ *
+ *  @param sourceCount - index variable for droneData Vector
+ *  @param oneSecondIndex - a new index that is created to represent the amount of entries for the epic-by-epic vector * 
+ *  @param data- vector passed by reference that will be written with position and time data for each second
+ *  @param sourceData- vector that contains reference data
+ */
+void fillOutputFile(int count, vector<Telemetry> &droneData, string outsFileName);
+/**
+ *  Function:   fillOutputFile
+ *              Fills the output file with one entry per frame
+ *
+ *  @param count - index variable for droneData Vector
+ *  @param droneData - vector that contains reference data
+ *  @param outsFileName - string containing the name for the output file
+ */
+void fillOutputEpicByEpicFile(int oneSecondIndex, vector<Telemetry> &droneDataPerSecond, string outsFileName);
+/**
+ *  Function:   fillOutputEpicByEpicFile
+ *              Fills the output file with one entry per second
+ *
+ *  @param oneSecondIndex - index variable for droneDataPerSecond Vector
+ *  @param droneDataPerSecond - vector that contains reference data
+ *  @param outsFileName - string containing the name for the output file
+ */
+
 int main(){
     cout << setprecision(6) << fixed;
     string inputFileName;
@@ -62,6 +88,7 @@ int main(){
     /// One second index will be used in the same way count was used for indexing the primary vector, droneData, which will be called sourceData in the  fillVectorwithOneSecondDurationCounter function
     fillOutputFile(count, droneData, outputFileName);
     fillOutputEpicByEpicFile(oneSecondIndex, droneDataPerSecond, outsEpicByEpicFileName);
+    cout << "Both files have compiled successfully." << endl;
     inputFileStream.close();
     return 0;
 }
@@ -170,5 +197,4 @@ void fillOutputEpicByEpicFile(int oneSecondIndex, vector<Telemetry> &droneDataPe
                         << droneDataPerSecond.at(i).latitude << ", " << droneDataPerSecond.at(i).longitude << ", " << droneDataPerSecond.at(i).altitude << endl;
     }
     outsEpicByEpic.close();
-    cout << "The output file compiled successfully." << endl;
 }
