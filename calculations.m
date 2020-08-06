@@ -5,8 +5,7 @@
 % This series of functions does several tasks:
 % 1. Converts Latitude, Longitude, and Altitude/Height(LLH) values from the Ublox GPS
 %   Reciever and DJI Drone to ECEF
-% 2. Calcuates ENU measurements for the drone
-%   with respect to the Ublox reciever.
+% 2. Calcuates ENU measurements for the drone with respect to the Ublox reciever.
 % 3. Calculates a Slant Distance between the Drone and the Ublox Reciever
 % 4. Calculates a Heading Angle (Azimuth clockwise from true north)
 % 5. Calcuates the Elevation Angle from the Ublox Reviever to the drone
@@ -45,7 +44,7 @@ end
 enu = [];
 i = 1;
 while i <= size(ubloxLLH, 1)
-    enu(i, 1:3) = ec2enu([drone_ecef(i, 1:3)], [ublox_ecef(i, 1:3)], [ubloxLLH(i, 1:3)]); %Ublox Reciever is the origin
+    enu(i, 1:3) = ec2enu([ublox_ecef(i, 1:3)], [drone_ecef(i, 1:3)], [droneLLH(i, 1:3)]); %Ublox Reciever is the origin
     i = i + 1; 
 end
 
