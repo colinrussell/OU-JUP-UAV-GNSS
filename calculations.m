@@ -8,7 +8,7 @@
 % 2. Calcuates ENU measurements for the drone
 %   with respect to the Ublox reciever.
 % 3. Calculates a Slant Distance between the Drone and the Ublox Reciever
-% 4. Calculates a Heading Angle
+% 4. Calculates a Heading Angle (Azimuth clockwise from true north)
 % 5. Calcuates the Elevation Angle from the Ublox Reviever to the drone
 
 
@@ -58,7 +58,9 @@ while i <= size(drone_ecef,1)
     i = i + 1;
 end
 
-%Heading Calculation - This is for the drone to the Ublox Reciever
+writematrix(slantDistance, 'slantDistance.txt');
+
+%Heading Calculation
 % ------------------------------------------------------------------
 heading = [];
 i = 1;
@@ -67,7 +69,7 @@ while i <= size(enu,1)
     i = i + 1;
 end
 
-writematrix(heading, 'heading.csv'); %Creates a CSV File with heading info
+writematrix(heading, 'heading.txt'); %Creates TXT File with heading info
 
 %Elevation Angle to Drone
 elevationAngle = [];
@@ -78,6 +80,6 @@ while i <= size(enu,1)
     % wrapTo2Pi assures that the angles are between 0 and 2pi radians
     i = i + 1;
 end
-writematrix(elevationAngle, 'elevationAngle.csv') %Creates a CSV File with elevation angle info
+writematrix(elevationAngle, 'elevationAngle.txt') %Creates a TXT File with elevation angle info
 
 fclose('all');
