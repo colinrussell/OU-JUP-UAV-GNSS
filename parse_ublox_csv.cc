@@ -1,7 +1,7 @@
 /**
  * @file: parse_srt.cc
  * @author: Colin Russell
- * @date: 08/04/2020
+ * @date: 08/06/2020
  * @brief: This program parses the Ublox GPS sensor's telemetry data found in the CSV File
  * that was compiled with Ucenter into a KML File to be used with Google Earth.
  */
@@ -38,8 +38,6 @@ void fillKMLFile(vector<Telemetry> &data, ofstream &outs);
 int main(){
     cout << setprecision(8) << fixed;
     string inputFileName = "Ublox GPS PVT Data.csv";
-    //cout << "Enter the name of input file: ";
-    //cin >> inputFileName;
     string outputFileName = "KML File for " + inputFileName + ".kml";
     vector <Telemetry> ubloxData;
     ifstream inputFileStream;
