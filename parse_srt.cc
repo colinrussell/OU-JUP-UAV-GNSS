@@ -1,11 +1,12 @@
 /**
  * @file: parse_srt.cc
  * @author: Colin Russell
- * @date: 08/04/2020
+ * @date: 08/06/2020
  * @brief: This program parses longitude, latitude, and altitude data from the SRT File of a 
  *         DJI drone. This program assumes that altitude is atleast 100 and less than 1000.
  *         Two output files are created. One file will contain each telemetry entry. The other file
  *         will contain one entry of telemetry for each second, which is known as epic by epic.
+ *         Camera exposure details are not parsed but it can be added to the code in the future.
  */
 
 #include <iostream>
@@ -23,11 +24,12 @@ struct Telemetry{
         double latitude;
         double longitude;
         double altitude;
-        double diffTime;    /// Time between each frame, measured in milliseconds
+        int frameCount;
+        string diffTime;    /// Time between each frame, measured in milliseconds
         string timecode; /// Starting duration for each frame for corresponding video
 };
 
-void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream);
+void fillVectorFromFile (vector<Telemetry> &data, ifstream &inputFileStream);
 /**
  *  Function:   fillVectorFromFile
  *              Fills the data vector with the date/time, latitude, longitude, and altitude at each given index
@@ -37,7 +39,7 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
  *  @param inputFileStream - input file
  */
 
-void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
+void fillVectorwithOneSecondDurationCounter(int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
 /**
  *  Function:   fillVectorwithOneSecondDurationCounter
  *              Fills the data vector with the date/time, latitude, longitude, and altitude for each second
@@ -47,7 +49,7 @@ void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex
  *  @param data- vector passed by reference that will be written with position and time data for each second
  *  @param sourceData- vector that contains reference data
  */
-void fillOutputFile(int count, vector<Telemetry> &droneData, string outsFileName);
+void fillOutputFile(vector<Telemetry> &droneData, string outsFileName);
 /**
  *  Function:   fillOutputFile
  *              Fills the output file with one entry per frame
@@ -81,43 +83,48 @@ int main(){
         cout << "Error opening the input file." << endl;
         exit(0);
     }
-    int count = 0;
-    fillVectorFromFile(droneData, count, inputFileStream);
+    fillVectorFromFile(droneData, inputFileStream);
     int oneSecondIndex = 0;
-    fillVectorwithOneSecondDurationCounter(count, oneSecondIndex, droneDataPerSecond, droneData);  /// count is the amount of index values / total frames from the original SRT File
+    fillVectorwithOneSecondDurationCounter(oneSecondIndex, droneDataPerSecond, droneData);
     /// One second index will be used in the same way count was used for indexing the primary vector, droneData, which will be called sourceData in the  fillVectorwithOneSecondDurationCounter function
-    fillOutputFile(count, droneData, outputFileName);
+    fillOutputFile(droneData, outputFileName);
     fillOutputEpicByEpicFile(oneSecondIndex, droneDataPerSecond, outsEpicByEpicFileName);
     cout << "Both files have compiled successfully." << endl;
     inputFileStream.close();
     return 0;
 }
 
-void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFileStream){
+void fillVectorFromFile (vector<Telemetry> &data, ifstream &inputFileStream){
     string temp;
     string tcode;
-    string month, day, year, timeWithHourMinuteSecond, fractionOfSecondString, dateModified, timeModified; /// The format in which the date and time are presented is modified
+    string timeWithHourMinuteSecond, fractionOfSecondString, timeModified; /// The format in which the date and time are presented is modified
     double thousandthSecond;
     string latitudeString, longitudeString, altitudeString;
     /// These 3 strings are substrings of the string containing the line of the SRT file where the data is located
     Telemetry entry; /// Represents a blank entry to push back the vector droneData
+    int count = 0;
+    int diffTimeIndex = 0;
     while (getline(inputFileStream, temp)){
         if (temp.length() == 29){
             data.push_back(entry);
             tcode = temp.substr(0,8) + "." + temp.substr(9,3);
             data.at(count).timecode = tcode;
-        }
-        if (temp.length() == 27){           /// gets the date and time
-            year = temp.substr(0,4);
-            month = temp.substr(5, 2);
-            day = temp.substr(8, 2);
+            getline(inputFileStream, temp);
+            if (count < 10) data.at(count).frameCount = stoi(temp.substr(27, 1));
+            if (count < 100 && count > 10) data.at(count).frameCount = stoi(temp.substr(27, 2));
+            if (count < 1000 && count > 100) data.at(count).frameCount = stoi(temp.substr(27, 3));
+            if (count < 10000 && count > 1000) data.at(count).frameCount = stoi(temp.substr(27, 4));
+            if (count < 100000 && count > 10000) data.at(count).frameCount = stoi(temp.substr(27, 5));
+            if (count < 1000000) data.at(count).frameCount = stoi(temp.substr(27, 6));
+            diffTimeIndex = temp.find("DiffTime") + 11;
+            data.at(count).diffTime = temp.substr(diffTimeIndex, 2);
+            getline(inputFileStream, temp);
+            data.at(count).date = temp.substr(0, 10);
             timeWithHourMinuteSecond = temp.substr(11, 8);
             data.at(count).second = stoi(temp.substr(17, 2));
             fractionOfSecondString = temp.substr(20, 3) + temp.substr(24,3);
             thousandthSecond = stoi(fractionOfSecondString) / 1000000.0;
             timeModified = timeWithHourMinuteSecond + to_string(thousandthSecond).substr(1,7);
-            dateModified = month + "/" + day + "/" + year;
-            data.at(count).date = dateModified;
             data.at(count).time = timeModified;
             getline(inputFileStream, temp);
             latitudeString = temp.substr(119, 9);
@@ -131,9 +138,9 @@ void fillVectorFromFile (vector<Telemetry> &data, int &count, ifstream &inputFil
     }
 }
 
-void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
+void fillVectorwithOneSecondDurationCounter(int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
     Telemetry entry;
-    for (int i = 1; i < sourceCount; ++i){
+    for (int i = 1; i < sourceData.size(); ++i){
         int indexMinus1 = i - 1;
         if((sourceData.at(i).second == 0) && ((sourceData.at(indexMinus1).second == 59) || i == 1)){
             data.push_back(entry);
@@ -160,7 +167,7 @@ void fillVectorwithOneSecondDurationCounter(int sourceCount, int &oneSecondIndex
     }
 }
 
-void fillOutputFile(int count, vector<Telemetry> &droneData, string outsFileName){
+void fillOutputFile(vector<Telemetry> &droneData, string outsFileName){
     ofstream outputFileStream;
     outputFileStream.open(outsFileName);
     if (outputFileStream.fail())
@@ -168,13 +175,13 @@ void fillOutputFile(int count, vector<Telemetry> &droneData, string outsFileName
         cout << "Error opening output file." << endl;
         exit(0);
     }
-    outputFileStream << "TimeCode, Frame, Date, Time, Latitude, Longitude, Altitude" << endl;
+    outputFileStream << "TimeCode, Frame, DiffTime, Date, Time, Latitude, Longitude, Altitude" << endl;
     outputFileStream << setprecision(6) << fixed;
     /// The for loop below fills the output CSV file.
-    for (int i = 0; i < count; ++i)
+    for (int i = 0; i < droneData.size(); ++i)
     {
-        outputFileStream << droneData.at(i).timecode << ", " << i + 1 << ", " << droneData.at(i).date << ", " << droneData.at(i).time << ", "
-                         << droneData.at(i).latitude << ", " << droneData.at(i).longitude << ", " << droneData.at(i).altitude << endl;
+        outputFileStream << droneData.at(i).timecode << ", " << droneData.at(i).frameCount << ", " << droneData.at(i).diffTime << ", " << droneData.at(i).date << ", " << droneData.at(i).time << ", "
+            << droneData.at(i).latitude << ", " << droneData.at(i).longitude << ", " << droneData.at(i).altitude << endl;
     }
     outputFileStream.close();
 }
