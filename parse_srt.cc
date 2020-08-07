@@ -35,17 +35,15 @@ void fillVectorFromFile (vector<Telemetry> &data, ifstream &inputFileStream);
  *              Fills the data vector with the date/time, latitude, longitude, and altitude at each given index
  *
  *  @param data - vector passed by reference that will be written with position and time data
- *  @param count - index variable
  *  @param inputFileStream - input file
  */
 
-void fillVectorwithOneSecondDurationCounter(int &oneSecondIndex, vector<Telemetry> &data, vector<Telemetry> &sourceData);
+void fillVectorwithOneSecondDurationCounter(vector<Telemetry> &data, vector<Telemetry> &sourceData);
 /**
  *  Function:   fillVectorwithOneSecondDurationCounter
  *              Fills the data vector with the date/time, latitude, longitude, and altitude for each second
  *
  *  @param sourceCount - index variable for droneData Vector
- *  @param oneSecondIndex - a new index that is created to represent the amount of entries for the epic-by-epic vector * 
  *  @param data- vector passed by reference that will be written with position and time data for each second
  *  @param sourceData- vector that contains reference data
  */
@@ -54,16 +52,14 @@ void fillOutputFile(vector<Telemetry> &droneData, string outsFileName);
  *  Function:   fillOutputFile
  *              Fills the output file with one entry per frame
  *
- *  @param count - index variable for droneData Vector
  *  @param droneData - vector that contains reference data
  *  @param outsFileName - string containing the name for the output file
  */
-void fillOutputEpicByEpicFile(int oneSecondIndex, vector<Telemetry> &droneDataPerSecond, string outsFileName);
+void fillOutputEpicByEpicFile(vector<Telemetry> &droneDataPerSecond, string outsFileName);
 /**
  *  Function:   fillOutputEpicByEpicFile
  *              Fills the output file with one entry per second
  *
- *  @param oneSecondIndex - index variable for droneDataPerSecond Vector
  *  @param droneDataPerSecond - vector that contains reference data
  *  @param outsFileName - string containing the name for the output file
  */
@@ -73,7 +69,7 @@ int main(){
     string inputFileName;
     cout << "Enter name of input file: ";
     cin >> inputFileName;
-    string outputFileName = "CSV File for " + inputFileName + ".csv";
+    string outputFileName = inputFileName + " CSV.csv";
     string outsEpicByEpicFileName = inputFileName + " Epic-by-Epic.csv";
     vector<Telemetry> droneData;
     vector<Telemetry> droneDataPerSecond;
@@ -84,11 +80,10 @@ int main(){
         exit(0);
     }
     fillVectorFromFile(droneData, inputFileStream);
-    int oneSecondIndex = 0;
-    fillVectorwithOneSecondDurationCounter(oneSecondIndex, droneDataPerSecond, droneData);
+    fillVectorwithOneSecondDurationCounter(droneDataPerSecond, droneData);
     /// One second index will be used in the same way count was used for indexing the primary vector, droneData, which will be called sourceData in the  fillVectorwithOneSecondDurationCounter function
     fillOutputFile(droneData, outputFileName);
-    fillOutputEpicByEpicFile(oneSecondIndex, droneDataPerSecond, outsEpicByEpicFileName);
+    fillOutputEpicByEpicFile(droneDataPerSecond, outsEpicByEpicFileName);
     cout << "Both files have compiled successfully." << endl;
     inputFileStream.close();
     return 0;
@@ -138,30 +133,20 @@ void fillVectorFromFile (vector<Telemetry> &data, ifstream &inputFileStream){
     }
 }
 
-void fillVectorwithOneSecondDurationCounter(int &oneSecondIndex, vector<Telemetry> &data, vector <Telemetry> &sourceData){
+void fillVectorwithOneSecondDurationCounter(vector<Telemetry> &data, vector <Telemetry> &sourceData){
     Telemetry entry;
+    int oneSecondIndex = 0;
     for (int i = 1; i < sourceData.size(); ++i){
         int indexMinus1 = i - 1;
         if((sourceData.at(i).second == 0) && ((sourceData.at(indexMinus1).second == 59) || i == 1)){
             data.push_back(entry);
-            data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
-            data.at(oneSecondIndex).date = sourceData.at(i).date;
-            data.at(oneSecondIndex).latitude = sourceData.at(i).latitude;
-            data.at(oneSecondIndex).longitude = sourceData.at(i).longitude;
-            data.at(oneSecondIndex).second = sourceData.at(i).second;
-            data.at(oneSecondIndex).time = sourceData.at(i).time;
-            data.at(oneSecondIndex).timecode = sourceData.at(i).timecode;
+            data.at(oneSecondIndex) = sourceData.at(i);
+
             oneSecondIndex++;
         }
         if ((sourceData.at(i).second > sourceData.at(indexMinus1).second) || ((sourceData.at(i).second == 59) && (sourceData.at(indexMinus1).second == 58))){
             data.push_back(entry);
-            data.at(oneSecondIndex).altitude = sourceData.at(i).altitude;
-            data.at(oneSecondIndex).date = sourceData.at(i).date;
-            data.at(oneSecondIndex).latitude = sourceData.at(i).latitude;
-            data.at(oneSecondIndex).longitude = sourceData.at(i).longitude;
-            data.at(oneSecondIndex).second = sourceData.at(i).second;
-            data.at(oneSecondIndex).time = sourceData.at(i).time;
-            data.at(oneSecondIndex).timecode = sourceData.at(i).timecode;
+            data.at(oneSecondIndex) = sourceData.at(i);
             oneSecondIndex++;
         }
     }
@@ -186,7 +171,7 @@ void fillOutputFile(vector<Telemetry> &droneData, string outsFileName){
     outputFileStream.close();
 }
 
-void fillOutputEpicByEpicFile(int oneSecondIndex, vector<Telemetry> &droneDataPerSecond, string outsFileName)
+void fillOutputEpicByEpicFile(vector<Telemetry> &droneDataPerSecond, string outsFileName)
 {
     ofstream outsEpicByEpic;
     outsEpicByEpic.open(outsFileName);
@@ -195,13 +180,13 @@ void fillOutputEpicByEpicFile(int oneSecondIndex, vector<Telemetry> &droneDataPe
         cout << "Error opening epic-by-epic output file." << endl;
         exit(0);
     }
-    outsEpicByEpic << "Time, Latitude, Longitude, Altitude" << endl;
+    outsEpicByEpic << "TimeCode, Frame, DiffTime, Date, Time, Latitude, Longitude, Altitude" << endl;
     outsEpicByEpic << setprecision(6) << fixed;
     /// The for loop below fills the output CSV file.
-    for (int i = 0; i < oneSecondIndex; ++i)
+    for (int i = 0; i < droneDataPerSecond.size(); ++i)
     {
-        outsEpicByEpic << droneDataPerSecond.at(i).time << ", "
-                        << droneDataPerSecond.at(i).latitude << ", " << droneDataPerSecond.at(i).longitude << ", " << droneDataPerSecond.at(i).altitude << endl;
+        outsEpicByEpic << droneDataPerSecond.at(i).timecode << ", " << droneDataPerSecond.at(i).frameCount << ", " << droneDataPerSecond.at(i).diffTime << ", " << droneDataPerSecond.at(i).date << ", " << droneDataPerSecond.at(i).time << ", "
+            << droneDataPerSecond.at(i).latitude << ", " << droneDataPerSecond.at(i).longitude << ", " << droneDataPerSecond.at(i).altitude << endl;
     }
     outsEpicByEpic.close();
 }
