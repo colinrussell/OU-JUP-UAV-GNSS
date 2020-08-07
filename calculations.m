@@ -1,5 +1,5 @@
 % Colin Russell
-% 08/05/2020
+% 08/06/2020
 % Ohio University School of EECS
 % 
 % This series of functions does several tasks:
@@ -26,9 +26,9 @@ end
 
 % This process will read the drone's geographical data into a table and then
 % an array
-droneTable = readtable('DJI_0071Epic-by-Epic.csv');
+droneTable = readtable('drone_epic_by_epic_for_matlab.csv');
 droneTable.Time = []; % The time column is be removed
-droneLLH = table2array(droneTable); 
+droneLLH = table2array(droneTable);
 droneTable = []; % This table is cleared to save memory
 
 drone_ecef = []; %Array for ECEF Values from the drone
