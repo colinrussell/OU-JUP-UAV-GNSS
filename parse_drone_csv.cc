@@ -2,7 +2,7 @@
  * @file: parse_drone.cc
  * @author: Colin Russell
  * @date: 08/06/2020
- * @brief: This program parses the DJI drone's GPS sensor's telemetry data found in the CSV File
+ * @brief: This program parses the DJI drone observation platform's GPS sensor telemetry data found in the CSV File
  * that was compiled with my program: parse_srt.cc into a KML File to be used with Google Earth.
  * This is intended to be used with "parse_ublox_csv.cc", "parse_srt.cc", and "calculations.m".
  */
@@ -136,71 +136,51 @@ void fillKMLFile(vector<Telemetry> &data, ofstream &outs){
         //<< "           <range>" << 2000 /****Replace this number */<< "</range>" << endl
          << "    </LookAt>" << endl;
         /// Information above includes the beginning of the XML KML file, the document infomation, and the LookAt Information
-    outs << "    <Style id=" << '"' << "track_n" << '"' << '>' << endl
+    outs << "    <Style id=" << '"' << "sh_movies" << '"' << '>' << endl
          << "        <IconStyle>" << endl
-         << "            <scale>.5</scale>" << endl
-         << "            <Icon><href>http:/" << "/earth.google.com/images/kml-icons/track-directional/track-none.png</href></Icon>" << endl
-         << "        </IconStyle>" << endl
-         << "      <LabelStyle><scale>0</scale></LabelStyle>" << endl
-        << "    </Style>" << endl; /// This style information includes details about the track icon
-
-    outs << "    <Style id=" << '"' << "track_h" << '"' << '>' << endl /// Highlighted Track Style
-        << "        <IconStyle>" << endl
-        << "            <scale>1.2</scale>" << endl
-        << "            <Icon><href>http:/" << "/earth.google.com/images/kml-icons/track-directional/track-none.png</href></Icon>" << endl
+         << "            <scale>1.4</scale>" << endl
+         << "            <Icon><href>http:/" << "/earth.google.com/images/kml/shapes/movies.png</href></Icon>" << endl
+         << "hotSpot x=" << '"' << "0.5" << '"' << " y =" << '"' << "0" << '"' << " xunits=" << '"' <<"fraction" << '"' << " yunits=" << '"' <<"fraction" << '"' << "/>" << endl
         << "        </IconStyle>" << endl
-        << "    </Style>" << endl; /// This style information includes details about the track icon
+        << "      <LineStyle><color>ff0880fd</color><width>4</width></LineStyle>" << endl
+        << "    </Style>" << endl;
 
-    outs << "    <StyleMap id = " << '"' << "track" << '"' << '>' <<  endl    /// This style info is a StyleMap to activate the style for track_n and track_h
+    outs << "    <StyleMap id = " << '"' << "msn_movies" << '"' << '>' <<  endl    /// This style info is a StyleMap to activate the style for the movie icon
          << "        <Pair>" << endl
-         << "            <key>normal</key>" << " <styleUrl>#track_n</styleUrl>" << endl
+         << "            <key>normal</key>" << " <styleUrl>#sn_movies</styleUrl>" << endl
          << "        </Pair>" << endl
          << "        <Pair>" << endl
-         << "            <key>highlight</key>" << " <styleUrl>#track_h</styleUrl>" << endl
+         << "            <key>highlight</key>" << " <styleUrl>#sh_movies</styleUrl>" << endl
          << "        </Pair>" << endl
          << "    </StyleMap>" << endl;
 
-    outs << "    <!-- Normal Multitrack Style -->" << endl
-         << "    <Style id=" << '"' << "multiTrack_n" << '"' << '>' << endl
-         << "        <IconStyle><scale>1.2</scale><Icon><href>http:/" << "/earth.google.com/images/kml-icons/track-directional/track-none.png</href></Icon></IconStyle>" << endl
-         << "        <LineStyle><color>ff00ff00</color><width>6</width></LineStyle>" << endl
+    outs << "    <Style id=" << '"' << "sn_movies" << '"' << '>' << endl
+        << "        <IconStyle>" << endl
+        << "            <scale>1.2</scale>" << endl
+        << "            <Icon><href>http:/" << "/earth.google.com/images/kml/shapes/movies.png</href></Icon>" << endl
+        << "            <hotSpot x=" << '"' << "0.5" << '"' << " y =" << '"' << "0" << '"' << " xunits=" << '"' <<"fraction" << '"' << " yunits=" << '"' <<"fraction" << '"' << "/>" << endl
+        << "        </IconStyle>" << endl
+        << "      <LineStyle><color>ff0880fd</color><width>4</width></LineStyle>" << endl
         << "    </Style>" << endl;
 
-    outs << "    <!-- Highlighted Multitrack Style -->" << endl
-        << "    <Style id=" << '"' << "multiTrack_n" << '"' << '>' << endl
-        << "        <IconStyle><scale>1.2</scale><Icon><href>http:/" << "/earth.google.com/images/kml-icons/track-directional/track-none.png</href></Icon></IconStyle>" << endl
-        << "        <LineStyle><color>99ffac59</color><width>8</width></LineStyle>" << endl
-        << "    </Style>" << endl;
-
-    outs << "    <StyleMap id = " << '"' << "multitrack" << '"' << '>' <<  endl    /// This style info is a StyleMap to activate the style for track_n and track_h
-        << "        <Pair>" << endl
-        << "            <key>normal</key>" << " <styleUrl>#multitrack_n</styleUrl>" << endl
-        << "        </Pair>" << endl
-        << "        <Pair>" << endl
-        << "            <key>highlight</key>" << " <styleUrl>#multitrack_h</styleUrl>" << endl
-        << "        </Pair>" << endl
-        << "    </StyleMap>" << endl;
-
-    outs << "    <Folder>" << endl
-         << "        <Placemark>" << endl
-         << "            <name>Drone GNSS Position</name>" << endl
-         << "            <Snippet></Snippet>" << endl
-         << "            <styleUrl>#multiTrack</styleUrl>" << endl
-         << "            <gx:Track>" << endl;
+    outs << "    <Placemark>" << endl
+         << "        <name>Observation Platform</name>" << endl
+         << "        <Snippet>" << "</Snippet>" << endl
+         << "        <styleUrl>#msn_movies</styleUrl>" << endl
+        << "        <gx:balloonVisibility>0</gx:balloonVisibility>"
+        << "        <gx:Track>" << endl;
     for (int i = 0; i < data.size(); ++i){
-        outs << "                " << data.at(i).when << endl;
+        outs << "            " << data.at(i).when << endl;
     }
     for (int i = 0; i < data.size(); ++i) {
-        outs << "                " << data.at(i).coord << endl;
+        outs << "            " << data.at(i).coord << endl;
     }
     for (int i = 0; i < data.size(); ++i) {
-        data.at(i).angles = "<gx:angles>" + to_string(data.at(i).heading) + " " + to_string(data.at(i).elevationAngle) + " 0.0</gx:angles>";
-        outs << "                " << data.at(i).angles << endl;
-        outs << "               <gx:Wait><gx:duration>1.0</gx:duration></gx:Wait>" << endl;
+        data.at(i).angles = "<gx:angles> " + to_string(data.at(i).heading) + " " + to_string(data.at(i).elevationAngle) + " 0 </gx:angles>";
+        outs << "            " << data.at(i).angles << endl;
     }
-    outs << "            </gx:Track>" << endl
-         << "            </Placemark>" << endl
-         << "        </Folder>" << endl;
+    outs << "        </gx:Track>" << endl
+         << "        </Placemark>" << endl;
     outs << "</kml>";
 }
 

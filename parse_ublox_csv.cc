@@ -2,7 +2,7 @@
  * @file: parse_srt.cc
  * @author: Colin Russell
  * @date: 08/06/2020
- * @brief: This program parses the Ublox GPS sensor's telemetry data found in the CSV File
+ * @brief: This program parses the Ublox Test Platform GPS sensor's telemetry data found in the CSV File
  * that was compiled with Ucenter into a KML File to be used with Google Earth.
  */
 
@@ -191,26 +191,23 @@ void fillKMLFile(vector<Telemetry> &data, ofstream &outs){
         << "            <key>highlight</key>" << " <styleUrl>#multitrack_h</styleUrl>" << endl
         << "        </Pair>" << endl
         << "    </StyleMap>" << endl;
-
-    outs << "    <Folder>" << endl
-         << "        <Placemark>" << endl
-         << "            <name>Ublox GNSS Position</name>" << endl
-         << "            <Snippet></Snippet>" << endl
-         << "            <styleUrl>#multiTrack</styleUrl>" << endl
-         << "            <gx:Track>" << endl;
+    outs << "    <Placemark>" << endl
+         << "        <name>Test Platform</name>" << endl
+         << "        <Snippet></Snippet>" << endl
+         << "        <styleUrl>#multiTrack</styleUrl>" << endl
+        << "        <gx:balloonVisibility>0</gx:balloonVisibility>" << endl
+        << "        <gx:Track>" << endl;
     for (int i = 0; i < data.size(); ++i){
-        outs << "                " << data.at(i).when << endl;
+        outs << "            " << data.at(i).when << endl;
     }
     for (int i = 0; i < data.size(); ++i) {
-        outs << "                " << data.at(i).coord << endl;
+        outs << "            " << data.at(i).coord << endl;
     }
     for (int i = 0; i < data.size(); ++i) {
         data.at(i).angles = "<gx:angles>" + to_string(data.at(i).heading) + " " + to_string(data.at(i).elevationAngle) + " 0.0</gx:angles>";
-        outs << "                " << data.at(i).angles << endl;
-        outs << "               <gx:Wait><gx:duration>1.0</gx:duration></gx:Wait>" << endl;
+        outs << "            " << data.at(i).angles << endl;
     }
-    outs << "            </gx:Track>" << endl
-         << "            </Placemark>" << endl
-         << "        </Folder>" << endl;
+    outs << "        </gx:Track>" << endl
+         << "        </Placemark>" << endl;
     outs << "</kml>";
 }
